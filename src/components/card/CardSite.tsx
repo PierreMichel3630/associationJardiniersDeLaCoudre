@@ -19,7 +19,14 @@ interface Props {
 }
 
 export const CardSite = ({ site, edit }: Props) => (
-  <Card>
+  <Card
+    sx={{
+      height: percent(100),
+      justifyContent: "space-between",
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
     <CardMedia
       sx={{
         width: percent(100),

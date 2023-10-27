@@ -1,10 +1,10 @@
 import { Adherent } from "./Adherent";
-import { Parcelle } from "./Parcelle";
+import { ParcelleNotJoin } from "./Parcelle";
 
 export interface Attribution {
   id: number;
   annee: number;
-  parcelle: Parcelle;
+  parcelle: ParcelleNotJoin;
   adherent: Adherent;
 }
 

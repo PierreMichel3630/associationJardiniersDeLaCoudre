@@ -25,7 +25,7 @@ export const getAllAttribution = () =>
 export const getAttributionParAnnee = (annee: number) =>
   supabase
     .from(SUPABASE_ATTRIBUTION_TABLE)
-    .select("*, adherent!inner(*), parcelle!inner(*)")
+    .select("*, parcelle(*, site(*)), adherent(*, adresse(*))")
     .eq("annee", annee);
 
 export const getAttributionParAnneeEtParcelle = (

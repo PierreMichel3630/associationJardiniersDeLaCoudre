@@ -5,6 +5,7 @@ import { PlotAdminPage } from "../pages/admin/PlotAdminPage";
 import { SiteAdminPage } from "../pages/admin/SiteAdminPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { GestionAttributionsPage } from "../pages/admin/GestionAttributionsPage";
+import { BilanPage } from "../pages/admin/BilanPage";
 
 export const AppRoutes = [
   {
@@ -44,6 +45,14 @@ export const AppRoutes = [
         element: (
           <ProtectedRoute>
             <GestionAttributionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/bilan",
+        element: (
+          <ProtectedRoute>
+            <BilanPage />
           </ProtectedRoute>
         ),
       },

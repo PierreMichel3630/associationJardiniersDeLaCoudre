@@ -61,6 +61,10 @@ export const AccountMenu = ({ user }: Props) => {
       name: "Gestion des attributions",
       url: "/gestion-attributions",
     },
+    {
+      name: "Bilan",
+      url: "/bilan",
+    },
   ];
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);

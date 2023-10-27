@@ -4,6 +4,8 @@ import { style } from "typestyle";
 
 import { LoginForm } from "../form/LoginForm";
 
+import logo from "../assets/logo.png";
+
 const cardCss = style({
   padding: 16,
 });
@@ -15,6 +17,9 @@ export const LoginPage = () => {
     >
       <Card variant="outlined" className={cardCss}>
         <Grid container spacing={1} sx={{ textAlign: "center" }}>
+          <Grid item xs={12}>
+            <img src={logo} width={400} />
+          </Grid>
           <Grid item xs={12}>
             <LoginForm />
           </Grid>

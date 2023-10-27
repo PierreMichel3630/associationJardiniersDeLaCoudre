@@ -6,6 +6,7 @@ import { Colors } from "./style/Colors";
 
 import Routes from "./routes";
 import { AuthProviderSupabase } from "./context/AuthProviderSupabase";
+import "moment/dist/locale/fr";
 
 export const UserContext = createContext<{
   mode: "light" | "dark";

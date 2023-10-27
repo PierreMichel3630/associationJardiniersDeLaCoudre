@@ -12,7 +12,7 @@ export const HomePage = () => {
         </Container>
       </Grid>
       <Grid item xs={12} sx={{ marginTop: 2, marginBottom: 8 }}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Outlet />
         </Container>
       </Grid>

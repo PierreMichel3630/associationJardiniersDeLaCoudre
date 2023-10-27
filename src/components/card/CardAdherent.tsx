@@ -8,6 +8,7 @@ import {
 
 import EditIcon from "@mui/icons-material/Edit";
 import { Adherent } from "../../model/Adherent";
+import { percent } from "csx";
 
 interface Props {
   adherent: Adherent;
@@ -15,7 +16,14 @@ interface Props {
 }
 
 export const CardAdherent = ({ adherent, edit }: Props) => (
-  <Card>
+  <Card
+    sx={{
+      height: percent(100),
+      justifyContent: "space-between",
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
     <CardContent>
       <Typography variant="h4" sx={{ textAlign: "center" }}>
         {`${adherent.prenom} ${adherent.nom} ${

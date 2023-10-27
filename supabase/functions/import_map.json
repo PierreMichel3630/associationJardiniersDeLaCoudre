@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "node-cache": "https://esm.sh/emailjs@4.0.3"
+  }
+}

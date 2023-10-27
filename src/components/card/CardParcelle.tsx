@@ -29,7 +29,14 @@ interface Props {
 }
 
 export const CardParcelle = ({ parcelle, edit }: Props) => (
-  <Card>
+  <Card
+    sx={{
+      height: percent(100),
+      justifyContent: "space-between",
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
     <CardMedia
       sx={{
         width: percent(100),
@@ -43,7 +50,9 @@ export const CardParcelle = ({ parcelle, edit }: Props) => (
       <Typography variant="h4">
         {parcelle.site.nom} - {parcelle.nom}
       </Typography>
-      <Typography variant="body1">{parcelle.surface} m2</Typography>
+      {parcelle.surface !== null && (
+        <Typography variant="body1">{parcelle.surface} m2</Typography>
+      )}
       <Typography variant="body1">{parcelle.prix}€</Typography>
     </CardContent>
     <CardActions>
