@@ -27,8 +27,10 @@ import { Attribution } from "../../model/Attribution";
 import { Bilan, BilanInsert, BilanUpdate } from "../../model/Bilan";
 import { Parcelle } from "../../model/Parcelle";
 import { Site } from "../../model/Site";
-import emailjs from "@emailjs/browser";
 import { PouvoirPDF } from "../../pdf/PouvoirPDF";
+import { sortByAdherentNomAndPrenom } from "../../utils/sort";
+import { getLabelAdherent } from "../../utils/get";
+import { calculPrixTotal, getPrixParcelleGroup } from "../../utils/bilan";
 
 interface Row {
   adherent: Adherent;
@@ -154,17 +156,25 @@ export const BilanPage = () => {
         ],
         [] as Array<HeaderParcelle>
       );
-      return [
-        ...acc,
-        ...headerParcelleSite,
-        {
-          site: value[0].site,
-          surface: null,
-          prix: null,
-          nom: "Parcelle Partagée",
-          partage: true,
-        },
-      ];
+
+      const isSitePartagee = value.reduce(
+        (acc, el) => acc && el.prixpartage,
+        true
+      );
+
+      return isSitePartagee
+        ? [
+            ...acc,
+            ...headerParcelleSite,
+            {
+              site: value[0].site,
+              surface: null,
+              prix: null,
+              nom: "Parcelle Partagée",
+              partage: true,
+            },
+          ]
+        : [...acc, ...headerParcelleSite];
     },
     [] as Array<HeaderParcelle>
   );
@@ -193,11 +203,14 @@ export const BilanPage = () => {
     attributions,
     (attribution) => attribution.adherent.id
   );
-  const rows = Object.entries(parcellesByAdherent).reduce((acc, [_, value]) => {
-    const adherent = value[0].adherent;
-    const parcelles = value.map((el) => el.parcelle);
-    return [...acc, { adherent, parcelles }];
-  }, [] as Array<Row>);
+  const rows = Object.entries(parcellesByAdherent)
+    .reduce((acc, [_, value]) => {
+      const adherent = value[0].adherent;
+      const parcelles = value.map((el) => el.parcelle);
+      return [...acc, { adherent, parcelles }];
+    }, [] as Array<Row>)
+    .filter((el) => el.adherent.nom !== "1/2 parcelle")
+    .sort(sortByAdherentNomAndPrenom);
 
   const handleChecked = (id: number) => {
     setAllChecked(false);
@@ -228,14 +241,6 @@ export const BilanPage = () => {
             adherent={row.adherent}
           />
         );
-
-        emailjs.send("service_ij665ye", "template_xbe0gk4", {
-          annee: anneeBilan,
-          nom: `${row.adherent.prenom} ${row.adherent.nom}`,
-          to: row.adherent.mail,
-          lieu: lieu,
-          date: date.format("dddd DD MMMM YYYY à HH:mm"),
-        });
       }
     });
     setChecked([]);
@@ -347,40 +352,18 @@ export const BilanPage = () => {
                   </TableCell>
                   <TableCell component="th" scope="row">
                     <Typography variant="h6">
-                      {`${row.adherent.prenom} ${row.adherent.nom} ${
-                        row.adherent.conjointnom !== ""
-                          ? `et ${row.adherent.conjointprenom} ${row.adherent.conjointnom}`
-                          : ""
-                      }`}
+                      {getLabelAdherent(row.adherent)}
                     </Typography>
                   </TableCell>
                   <TableCell component="th" scope="row" align="center">
                     {ADHESION_PRIX} €
                   </TableCell>
                   {headersParcelle.map((el, index) => {
-                    const parcellesCorrespondante = row.parcelles.filter(
-                      (parcelle) => {
-                        const isPartagee =
-                          attributionParParcelle[parcelle.id].length > 1;
-                        return el.partage
-                          ? parcelle.site.id === el.site.id && isPartagee
-                          : parcelle.site.id === el.site.id &&
-                              parcelle.surface === el.surface &&
-                              parcelle.prix === el.prix &&
-                              !isPartagee;
-                      }
+                    const prix = getPrixParcelleGroup(
+                      el,
+                      row.parcelles,
+                      attributions
                     );
-                    let prix =
-                      el.prix !== null
-                        ? parcellesCorrespondante.length * el.prix
-                        : 0;
-                    if (el.partage) {
-                      prix = parcellesCorrespondante.reduce((acc, value) => {
-                        const adherentParcelle =
-                          attributionParParcelle[value.id];
-                        return acc + value.prix / adherentParcelle.length;
-                      }, 0);
-                    }
                     return (
                       <TableCell
                         key={index}
@@ -393,13 +376,9 @@ export const BilanPage = () => {
                     );
                   })}
                   <TableCell component="th" scope="row" align="center">
-                    {ADHESION_PRIX +
-                      row.parcelles.reduce((acc, value) => {
-                        const adherentParcelle =
-                          attributionParParcelle[value.id];
-                        return acc + value.prix / adherentParcelle.length;
-                      }, 0)}{" "}
-                    €
+                    <Typography variant="h4" noWrap>
+                      {calculPrixTotal(row.parcelles, attributions)} €
+                    </Typography>
                   </TableCell>
                   <TableCell component="th" scope="row">
                     <Button

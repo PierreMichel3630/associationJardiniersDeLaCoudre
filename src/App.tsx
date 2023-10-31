@@ -1,4 +1,4 @@
-import { createContext, useMemo, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import "./App.css";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
@@ -22,6 +22,14 @@ function App() {
       ? (localStorage.getItem("mode")! as "light" | "dark")
       : "light"
   );
+
+  useEffect(() => {
+    if (mode) {
+      localStorage.setItem("mode", mode);
+    } else {
+      localStorage.removeItem("mode");
+    }
+  }, [mode]);
 
   const theme = useMemo(
     () =>
@@ -110,6 +118,18 @@ function App() {
             fontWeight: 600,
             "@media (max-width:600px)": {
               fontSize: 12,
+            },
+          },
+        },
+        components: {
+          MuiTableRow: {
+            styleOverrides: {
+              root: {
+                "&:nth-of-type(even)": {
+                  backgroundColor:
+                    mode === "light" ? Colors.lightgrey : Colors.greyDarkMode,
+                },
+              },
             },
           },
         },

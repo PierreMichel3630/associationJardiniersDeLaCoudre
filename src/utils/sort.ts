@@ -1,5 +1,9 @@
 export const sortByNom = (a: any, b: any) => a.nom.localeCompare(b.nom);
 
+export const sortByAdherentNomAndPrenom = (a: any, b: any) =>
+  a.adherent.nom.localeCompare(b.adherent.nom) ||
+  a.adherent.prenom.localeCompare(b.adherent.prenom);
+
 export const sortByNomAndPrenom = (a: any, b: any) =>
   a.nom.localeCompare(b.nom) || a.prenom.localeCompare(b.prenom);
 

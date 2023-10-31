@@ -1,10 +1,10 @@
 import {
   Document,
   Font,
+  Image,
   Page,
   StyleSheet,
   Text,
-  Image,
   View,
 } from "@react-pdf/renderer";
 import { Moment } from "moment";
@@ -13,7 +13,7 @@ import logo from "../assets/logo.png";
 import { Adherent } from "../model/Adherent";
 import { Attribution } from "../model/Attribution";
 import { ADHESION_PRIX, HeaderParcelle } from "../pages/admin/BilanPage";
-import { groupBy } from "lodash";
+import { calculPrixTotal, getPrixParcelleGroup } from "../utils/bilan";
 
 Font.register({
   family: "Open Sans",
@@ -141,11 +141,6 @@ export const AdhPDF = ({
     .filter((attribution) => attribution.adherent.id === adherent.id)
     .map((el) => el.parcelle);
 
-  const attributionParParcelle = groupBy(
-    attributions,
-    (attribution) => attribution.parcelle.id
-  );
-
   return (
     <Document title={`AG ${date.year()} Invitation`}>
       <Page size="A4" style={styles.page}>
@@ -214,26 +209,11 @@ export const AdhPDF = ({
             </View>
           </View>
           {headersParcelle.map((el, index) => {
-            const parcellesCorrespondante = parcellesAdherent.filter(
-              (parcelle) => {
-                const isPartagee =
-                  attributionParParcelle[parcelle.id].length > 1;
-                return el.partage
-                  ? parcelle.site.id === el.site.id && isPartagee
-                  : parcelle.site.id === el.site.id &&
-                      parcelle.surface === el.surface &&
-                      parcelle.prix === el.prix &&
-                      !isPartagee;
-              }
+            const prix = getPrixParcelleGroup(
+              el,
+              parcellesAdherent,
+              attributions
             );
-            let prix =
-              el.prix !== null ? parcellesCorrespondante.length * el.prix : 0;
-            if (el.partage) {
-              prix = parcellesCorrespondante.reduce((acc, value) => {
-                const adherentParcelle = attributionParParcelle[value.id];
-                return acc + value.prix / adherentParcelle.length;
-              }, 0);
-            }
             return (
               <View style={styles.tableRow} key={index}>
                 <View style={styles.tableColMin}>
@@ -267,12 +247,7 @@ export const AdhPDF = ({
 
             <View style={styles.tableColPrix}>
               <Text style={styles.tableCell}>
-                {ADHESION_PRIX +
-                  parcellesAdherent.reduce((acc, value) => {
-                    const adherentParcelle = attributionParParcelle[value.id];
-                    return acc + value.prix / adherentParcelle.length;
-                  }, 0)}{" "}
-                €
+                {calculPrixTotal(parcellesAdherent, attributions)} €
               </Text>
             </View>
           </View>

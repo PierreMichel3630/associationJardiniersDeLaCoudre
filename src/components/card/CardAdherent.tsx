@@ -9,6 +9,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import { Adherent } from "../../model/Adherent";
 import { percent } from "csx";
+import { getLabelAdherent } from "../../utils/get";
 
 interface Props {
   adherent: Adherent;
@@ -26,11 +27,7 @@ export const CardAdherent = ({ adherent, edit }: Props) => (
   >
     <CardContent>
       <Typography variant="h4" sx={{ textAlign: "center" }}>
-        {`${adherent.prenom} ${adherent.nom} ${
-          adherent.conjointnom !== ""
-            ? `et ${adherent.conjointprenom} ${adherent.conjointnom}`
-            : ""
-        }`}
+        {getLabelAdherent(adherent)}
       </Typography>
       <Typography variant="body1">Téléphone : {adherent.telephone}</Typography>
       <Typography variant="body1">Email : {adherent.mail}</Typography>

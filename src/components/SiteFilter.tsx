@@ -30,7 +30,7 @@ export const SiteFilter = ({ value, onChange }: Props) => {
         />
       </Grid>
       {sites.map((site) => (
-        <Grid item>
+        <Grid item key={site.id}>
           <Chip
             label={site.nom}
             variant={value === site.id ? "filled" : "outlined"}

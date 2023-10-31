@@ -22,6 +22,7 @@ import { Attribution } from "../../model/Attribution";
 import { Fragment } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { deleteAttribution } from "../../api/attribution";
+import { getLabelAdherent } from "../../utils/get";
 
 interface Props {
   parcelle: Parcelle;
@@ -126,13 +127,7 @@ export const CardGestionParcelle = ({
               <Fragment key={attribution.id}>
                 <Grid item xs={9}>
                   <Typography variant="h4" sx={{ textAlign: "center" }}>
-                    {`${attribution.adherent.prenom} ${
-                      attribution.adherent.nom
-                    } ${
-                      attribution.adherent.conjointnom !== ""
-                        ? `et ${attribution.adherent.conjointprenom} ${attribution.adherent.conjointnom}`
-                        : ""
-                    }`}
+                    {getLabelAdherent(attribution.adherent)}
                   </Typography>
                 </Grid>
                 <Grid item xs={3}>

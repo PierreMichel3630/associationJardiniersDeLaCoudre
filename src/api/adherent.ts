@@ -14,5 +14,8 @@ export const updateAdherent = (value: AdherentUpdate) =>
     .select()
     .single();
 
-export const getAllAdherent = () =>
+export const getAllAdherentWithAdresse = () =>
   supabase.from(SUPABASE_ADHERENT_TABLE).select("*, adresse!inner(*)");
+
+export const getAllAdherent = () =>
+  supabase.from(SUPABASE_ADHERENT_TABLE).select("*");

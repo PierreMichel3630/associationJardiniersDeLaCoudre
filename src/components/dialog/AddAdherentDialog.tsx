@@ -15,6 +15,8 @@ import { deleteAttribution, insertAttribution } from "../../api/attribution";
 import { Adherent } from "../../model/Adherent";
 import { Attribution, AttributionInsert } from "../../model/Attribution";
 import { Parcelle } from "../../model/Parcelle";
+import { sortByNomAndPrenom } from "../../utils/sort";
+import { getLabelAdherent } from "../../utils/get";
 
 interface Props {
   open: boolean;
@@ -92,7 +94,7 @@ export const AddAdherentDialog = ({
           </Grid>
           <Grid item xs={12}>
             <FormGroup>
-              {adherents.map((adherent) => (
+              {adherents.sort(sortByNomAndPrenom).map((adherent) => (
                 <FormControlLabel
                   key={adherent.id}
                   control={
@@ -103,11 +105,7 @@ export const AddAdherentDialog = ({
                       }
                     />
                   }
-                  label={`${adherent.prenom} ${adherent.nom} ${
-                    adherent.conjointnom !== ""
-                      ? `et ${adherent.conjointprenom} ${adherent.conjointnom}`
-                      : ""
-                  }`}
+                  label={getLabelAdherent(adherent)}
                 />
               ))}
             </FormGroup>

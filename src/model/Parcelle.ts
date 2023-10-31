@@ -7,6 +7,7 @@ export interface Parcelle {
   prix: number;
   image: string | null;
   site: Site;
+  prixpartage: boolean;
 }
 
 export interface ParcelleInsert {

@@ -2,7 +2,7 @@ import { Grid, IconButton, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { getAllAdherent } from "../../api/adherent";
+import { getAllAdherentWithAdresse } from "../../api/adherent";
 import { CardAdherent } from "../../components/card/CardAdherent";
 import { CreateAdherentDialog } from "../../components/dialog/CreateAdherentDialog";
 import { SearchInput } from "../../components/input/SearchInput";
@@ -16,7 +16,7 @@ export const AdherentAdminPage = () => {
   const [editValue, setEditValue] = useState<Adherent | null>(null);
 
   const getAdherents = async () => {
-    const { data } = await getAllAdherent();
+    const { data } = await getAllAdherentWithAdresse();
     setAdherents(data as Array<Adherent>);
   };
 

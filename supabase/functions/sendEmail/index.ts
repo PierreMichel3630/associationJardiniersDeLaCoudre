@@ -1,5 +1,5 @@
 // import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
-import { SMTPClient } from "emailjs";
+// import { SMTPClient } from "emailjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     await client.close();*/
 
-    const client = new SMTPClient({
+    /*const client = new SMTPClient({
       username: "jardiniersdelacoudre@gmail.com",
       password: "vqxzyrkfuykmaciq",
       host: "smtp.gmail.com",
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
         },
       });
-    });
+    });*/
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
