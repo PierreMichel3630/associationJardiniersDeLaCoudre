@@ -25,17 +25,10 @@ export const SiteList = () => {
   }, []);
 
   return (
-    <Grid container>
+    <Grid container justifyContent="center">
       <Grid item xs={12}>
         <Typography variant="h2">Nos Sites</Typography>
-        <ImageList
-          sx={{
-            gridAutoFlow: "column",
-            gridTemplateColumns:
-              "repeat(auto-fill,minmax(350px,1fr)) !important",
-            gridAutoColumns: "minmax(350px, 1fr)",
-          }}
-        >
+        <ImageList cols={3}>
           {sites.map((site) => (
             <ImageListItem key={site.id}>
               <img

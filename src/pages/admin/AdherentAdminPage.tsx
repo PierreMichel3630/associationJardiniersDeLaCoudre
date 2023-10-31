@@ -5,9 +5,12 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { getAllAdherent } from "../../api/adherent";
 import { CardAdherent } from "../../components/card/CardAdherent";
 import { CreateAdherentDialog } from "../../components/dialog/CreateAdherentDialog";
+import { SearchInput } from "../../components/input/SearchInput";
 import { Adherent } from "../../model/Adherent";
+import { sortByNomAndPrenom } from "../../utils/sort";
 
 export const AdherentAdminPage = () => {
+  const [search, setSearch] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [adherents, setAdherents] = useState<Array<Adherent>>([]);
   const [editValue, setEditValue] = useState<Adherent | null>(null);
@@ -20,6 +23,17 @@ export const AdherentAdminPage = () => {
   useEffect(() => {
     getAdherents();
   }, []);
+
+  const adherentsFilter = adherents.filter(
+    (adherent) =>
+      adherent.nom.includes(search) ||
+      adherent.prenom.includes(search) ||
+      `${adherent.nom} ${adherent.prenom}`.includes(search) ||
+      `${adherent.prenom} ${adherent.nom}`.includes(search) ||
+      (adherent.conjointprenom !== "" &&
+        adherent.conjointprenom.includes(search)) ||
+      (adherent.conjointnom !== "" && adherent.conjointnom.includes(search))
+  );
 
   return (
     <Grid container spacing={1}>
@@ -49,7 +63,14 @@ export const AdherentAdminPage = () => {
           </Grid>
         </Grid>
       </Grid>
-      {adherents.map((adherent) => (
+      <Grid item xs={12}>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Chercher un adhérent"
+        />
+      </Grid>
+      {adherentsFilter.sort(sortByNomAndPrenom).map((adherent) => (
         <Grid item xs={4} key={adherent.id}>
           <CardAdherent
             adherent={adherent}

@@ -1,7 +1,7 @@
 import { HomePage } from "../pages/HomePage";
 import { AccueilPage } from "../pages/AccueilPage";
 import { AdherentAdminPage } from "../pages/admin/AdherentAdminPage";
-import { PlotAdminPage } from "../pages/admin/PlotAdminPage";
+import { ParcelleAdminPage } from "../pages/admin/ParcelleAdminPage";
 import { SiteAdminPage } from "../pages/admin/SiteAdminPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { GestionAttributionsPage } from "../pages/admin/GestionAttributionsPage";
@@ -28,7 +28,7 @@ export const AppRoutes = [
         path: "/admin-parcelles",
         element: (
           <ProtectedRoute>
-            <PlotAdminPage />
+            <ParcelleAdminPage />
           </ProtectedRoute>
         ),
       },

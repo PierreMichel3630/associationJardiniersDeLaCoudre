@@ -1,20 +1,26 @@
 import { Grid, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
-import { Parcelle } from "../../model/Parcelle";
-import { getAllParcelle } from "../../api/parcelle";
-import { CardGestionParcelle } from "../../components/card/CardParcelle";
 import { DatePicker } from "@mui/x-date-pickers";
 import moment, { Moment } from "moment";
-import { AddAdherentDialog } from "../../components/dialog/AddAdherentDialog";
+import { useEffect, useState } from "react";
 import { getAttributionParAnnee } from "../../api/attribution";
+import { getAllParcelle } from "../../api/parcelle";
+import { SiteFilter } from "../../components/SiteFilter";
+import { CardGestionParcelle } from "../../components/card/CardParcelle";
+import { AddAdherentDialog } from "../../components/dialog/AddAdherentDialog";
 import { Attribution } from "../../model/Attribution";
+import { Parcelle } from "../../model/Parcelle";
+import { sortBySiteNomAndNom } from "../../utils/sort";
+import { SearchInput } from "../../components/input/SearchInput";
 
 export const GestionAttributionsPage = () => {
+  const [search, setSearch] = useState("");
   const [annee, setAnnee] = useState<Moment | null>(moment());
-  const [parcelles, setParcelles] = useState<Array<Parcelle>>([]);
+  const [filter, setFilter] = useState(0);
   const [openModal, setOpenModal] = useState(false);
-  const [parcelle, setParcelle] = useState<Parcelle | null>(null);
+
+  const [parcelles, setParcelles] = useState<Array<Parcelle>>([]);
   const [attributions, setAttributions] = useState<Array<Attribution>>([]);
+  const [parcelle, setParcelle] = useState<Parcelle | null>(null);
 
   const getParcelles = async () => {
     const { data } = await getAllParcelle();
@@ -36,6 +42,12 @@ export const GestionAttributionsPage = () => {
     getAttributions();
   }, [annee]);
 
+  const parcellesFilter = parcelles.filter(
+    (parcelle) =>
+      (filter === 0 ? true : parcelle.site.id === filter) &&
+      parcelle.nom.includes(search)
+  );
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} sx={{ textAlign: "center" }}>
@@ -49,7 +61,17 @@ export const GestionAttributionsPage = () => {
           views={["year"]}
         />
       </Grid>
-      {parcelles.map((parcelle) => (
+      <Grid item xs={12}>
+        <SiteFilter value={filter} onChange={setFilter} />
+      </Grid>
+      <Grid item xs={12}>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Chercher une parcelle"
+        />
+      </Grid>
+      {parcellesFilter.sort(sortBySiteNomAndNom).map((parcelle) => (
         <Grid item xs={12} key={parcelle.id}>
           <CardGestionParcelle
             attributions={attributions.filter(
