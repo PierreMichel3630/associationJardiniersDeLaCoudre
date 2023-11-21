@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker, DateTimeField } from "@mui/x-date-pickers";
+import ReactPDF from "@react-pdf/renderer";
 import { groupBy } from "lodash";
 import moment, { Moment } from "moment";
 import { useEffect, useState } from "react";
@@ -22,15 +23,21 @@ import { getBilanByAnnee, insertBilan, updateBilan } from "../../api/bilan";
 import { getAllParcelle } from "../../api/parcelle";
 import { InputListText } from "../../components/InputListText";
 import { ApercuPDFDialog } from "../../components/dialog/ApercuPDFDialog";
+import { EmailAGText } from "../../email/EmailAG";
 import { Adherent } from "../../model/Adherent";
 import { Attribution } from "../../model/Attribution";
 import { Bilan, BilanInsert, BilanUpdate } from "../../model/Bilan";
 import { Parcelle } from "../../model/Parcelle";
 import { Site } from "../../model/Site";
+import { AdhPDF } from "../../pdf/AdhPDF";
+import { InvitationPDF } from "../../pdf/InvitationPDF";
 import { PouvoirPDF } from "../../pdf/PouvoirPDF";
-import { sortByAdherentNomAndPrenom } from "../../utils/sort";
-import { getLabelAdherent } from "../../utils/get";
 import { calculPrixTotal, getPrixParcelleGroup } from "../../utils/bilan";
+import { getLabelAdherent } from "../../utils/get";
+import { openMail } from "../../utils/navigation";
+import { sortByAdherentNomAndPrenom } from "../../utils/sort";
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
 
 interface Row {
   adherent: Adherent;
@@ -78,7 +85,16 @@ export const BilanPage = () => {
 
   const getBilan = async () => {
     const { data } = await getBilanByAnnee(annee.year());
-    setBilan(data as Bilan);
+    if (data !== null) {
+      setBilan(data as Bilan);
+    } else {
+      const bilanInsert: BilanInsert = {
+        ...bilanDefault,
+        annee: annee.year(),
+      };
+      const { data } = await insertBilan(bilanInsert);
+      setBilan(data as Bilan);
+    }
   };
 
   const modifierBilan = async (champ: string, value: any) => {
@@ -88,22 +104,27 @@ export const BilanPage = () => {
         annee: annee.year(),
         [champ]: value,
       };
-      const { data } = await updateBilan(bilanUpdate);
-      setBilan(data as Bilan);
-    } else {
-      const bilanInsert: BilanInsert = {
-        ...bilanDefault,
-        annee: annee.year(),
-        [champ]: value,
-      };
-      const { data } = await insertBilan(bilanInsert);
-      setBilan(data as Bilan);
+      setBilan(bilanUpdate);
+    }
+  };
+
+  const enregistrerBilan = async () => {
+    if (bilan !== null) {
+      await updateBilan(bilan);
     }
   };
 
   useEffect(() => {
     getBilan();
   }, [annee]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      enregistrerBilan();
+    }, 1000);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [bilan]);
 
   const getParcelles = async () => {
     const { data } = await getAllParcelle();
@@ -197,6 +218,7 @@ export const BilanPage = () => {
     )),
     <Typography variant="h4">Total</Typography>,
     <Typography variant="h4"></Typography>,
+    <Typography variant="h4"></Typography>,
   ];
 
   const parcellesByAdherent = groupBy(
@@ -219,12 +241,58 @@ export const BilanPage = () => {
     );
   };
 
+  const sendEmail = (id: number) => {
+    const row = rows.find((el) => el.adherent.id === id);
+    if (row) {
+      const date = moment(bilan !== null ? bilan.date : bilanDefault.date);
+      const lieu = bilan !== null ? bilan.lieu : bilanDefault.lieu;
+
+      openMail(
+        row.adherent.mail,
+        `Jardiniers de la Coudre - AG ${annee.year()}`,
+        EmailAGText(
+          row.adherent,
+          annee.year(),
+          lieu,
+          date.format("dddd DD MMMM YYYY à HH:mm")
+        )
+      );
+    }
+  };
+
   const sendAllEmail = () => {
-    checked.forEach((idAdherent) => {
+    checked.forEach(async (idAdherent) => {
       const row = rows.find((el) => el.adherent.id === idAdherent);
       if (row) {
-        const anneeBilan = annee.year();
         const date = moment(bilan !== null ? bilan.date : bilanDefault.date);
+        const lieu = bilan !== null ? bilan.lieu : bilanDefault.lieu;
+
+        openMail(
+          row.adherent.mail,
+          `Jardiniers de la Coudre - AG ${annee.year()}`,
+          EmailAGText(
+            row.adherent,
+            annee.year(),
+            lieu,
+            date.format("dddd DD MMMM YYYY à HH:mm")
+          )
+        );
+      }
+    });
+    setChecked([]);
+  };
+
+  const generatePDF = async () => {
+    const zip = new JSZip();
+    const date = moment(bilan !== null ? bilan.date : bilanDefault.date);
+
+    await checked.reduce(async (promise, idAdherent) => {
+      await promise;
+      const row = rows.find((el) => el.adherent.id === idAdherent);
+      if (row) {
+        const nomPrenom = `${row.adherent.nom.toUpperCase()} ${
+          row.adherent.prenom
+        }`;
         const ordresdujour =
           bilan !== null ? bilan.ordresdujour : bilanDefault.ordresdujour;
         const resolutions =
@@ -233,15 +301,39 @@ export const BilanPage = () => {
           bilan !== null ? bilan.president : bilanDefault.president;
         const lieu = bilan !== null ? bilan.lieu : bilanDefault.lieu;
 
-        const pdf1 = (
+        const blob1 = await ReactPDF.pdf(
           <PouvoirPDF
             date={date}
             lieu={lieu}
             resolutions={resolutions}
             adherent={row.adherent}
           />
-        );
+        ).toBlob();
+
+        const blob2 = await ReactPDF.pdf(
+          <InvitationPDF
+            date={date}
+            president={president}
+            lieu={lieu}
+            ordredujour={ordresdujour}
+          />
+        ).toBlob();
+
+        const blob3 = await ReactPDF.pdf(
+          <AdhPDF
+            date={date}
+            adherent={row.adherent}
+            attributions={attributions}
+            headersParcelle={headersParcelle}
+          />
+        ).toBlob();
+        zip.file(`${nomPrenom}/Pouvoir ${date.year()}.pdf`, blob1);
+        zip.file(`${nomPrenom}/AG ${date.year()} Invitation.pdf`, blob2);
+        zip.file(`${nomPrenom}/ADH ${date.year()}.pdf`, blob3);
       }
+    }, Promise.resolve());
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, `AG${date.year()}.zip`);
     });
     setChecked([]);
   };
@@ -393,13 +485,33 @@ export const BilanPage = () => {
                       Aperçu email
                     </Button>
                   </TableCell>
+                  <TableCell component="th" scope="row">
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => sendEmail(row.adherent.id)}
+                    >
+                      Envoie email
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={6}>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          onClick={() => generatePDF()}
+        >
+          Générer les PDFS
+        </Button>
+      </Grid>
+      <Grid item xs={6}>
         <Button
           fullWidth
           variant="contained"

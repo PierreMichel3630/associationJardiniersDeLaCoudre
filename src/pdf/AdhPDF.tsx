@@ -142,7 +142,7 @@ export const AdhPDF = ({
     .map((el) => el.parcelle);
 
   return (
-    <Document title={`AG ${date.year()} Invitation`}>
+    <Document title={`ADH ${date.year()}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.sectionhorizontal}>
           <Image src={logo} style={styles.logo} />
